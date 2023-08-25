@@ -1,0 +1,15 @@
+# Use an appropriate base image for your client application with Node.js and Yarn
+FROM node:14
+
+# Set the working directory inside the container
+WORKDIR /app/client
+
+# Copy the client application files to the container
+COPY client/package.json client/yarn.lock /app/client/
+RUN yarn install
+
+# Copy the rest of the client application code
+COPY client/ /app/client/
+
+# Specify the command to build and run your client application
+CMD ["yarn", "start"]
