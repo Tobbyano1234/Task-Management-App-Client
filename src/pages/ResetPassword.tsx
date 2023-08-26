@@ -1,15 +1,17 @@
-import { Fragment, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Fragment, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import InputField from "../components/common/Input";
 import { toast } from "react-toastify";
-import { resetPasswordService } from "../services/auth.service";
+import { resetPasswordService, sendVerificationOTPService } from "../services/auth.service";
 import { encryptMail } from "../utils/encryptMail";
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState<boolean>(false);
+  const [resetBtnLoading, setResetBtnLoading] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(59);
   const [formData, setFormData] = useState<PasswordDTO>({
     newPassword: "",
     confirmPassword: "",
@@ -54,6 +56,37 @@ export const ResetPassword = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (seconds > 0) {
+      const timer = setInterval(() => {
+        setSeconds((prevSeconds) => prevSeconds - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+
+    // Return an empty cleanup function if seconds is not greater than 0
+    return () => {};
+  }, [seconds]);
+
+const handleResendOTP = async () => {
+  setResetBtnLoading(true);
+  const res = await sendVerificationOTPService(email);
+  const { statusCode, message } = res;
+  if (statusCode === 200) {
+    toast.success(message, {
+      position: toast.POSITION.TOP_CENTER,
+    });
+  } else {
+    toast.error(message, {
+      position: toast.POSITION.TOP_CENTER,
+    });
+  }
+  setSeconds(59);
+  setResetBtnLoading(false);
+};
+
   return (
     <Fragment>
       <main>
@@ -110,21 +143,31 @@ export const ResetPassword = () => {
               <div>
                 <Button
                   type="submit"
-                  title={loading ? "Loading..." : "Login"}
+                  title={loading ? "Loading..." : "Reset Password"}
                   disabled={loading}
                 />
               </div>
             </form>
-
-            <div>
-              <p className="mt-10 text-center text-sm text-gray-500">
-                Already have an account?{" "}
-                <Link to="/login">
-                  <p className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
-                    Login
-                  </p>
-                </Link>
+            <div className="text-sm">
+              <p className="block text-sm font-medium leading-6 text-gray-900">
+                Didn't get otp. Click Resend{" "}
               </p>
+              {seconds !== 0 ? (
+                <p className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+                  Resend Otp in {seconds}s
+                </p>
+              ) : (
+                <button
+                  type="submit"
+                  className={`font-semibold leading-6 text-indigo-600 hover:text-indigo-500 tracking-wide cursor-pointer ${
+                    resetBtnLoading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={handleResendOTP}
+                  disabled={resetBtnLoading}
+                >
+                  Resend Otp
+                </button>
+              )}
             </div>
           </div>
         </div>

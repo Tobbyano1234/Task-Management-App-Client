@@ -38,6 +38,6 @@
   status = 200
 
 [[redirects]]
-  from = "/dashboard"
+  from = "/"
   to = "/index.html"
   status = 200

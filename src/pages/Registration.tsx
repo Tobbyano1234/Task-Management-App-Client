@@ -47,14 +47,13 @@ const UserRegistrationForm = (): JSX.Element => {
       const res = await signupService(formData);
       const { statusCode, message } = res;
       if (statusCode === 201) {
-        console.log("toast")
+        console.log("toast");
         toast.success(message, {
           position: toast.POSITION.TOP_CENTER,
         });
-        
-          localStorage.setItem("email", formData.email);
-          navigate("/verify-account");
 
+        localStorage.setItem("email", formData.email);
+        navigate("/verify-account");
       } else {
         toast.error(message, {
           position: toast.POSITION.TOP_CENTER,
@@ -65,7 +64,7 @@ const UserRegistrationForm = (): JSX.Element => {
         position: toast.POSITION.TOP_CENTER,
       });
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -160,7 +159,7 @@ const UserRegistrationForm = (): JSX.Element => {
             </form>
 
             <div className="mt-10 text-center text-sm text-gray-500">
-              <Link to="/dashboard">Already have an account</Link>
+              <p>Already have an account</p>
               <Link to="/login">
                 <p className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
                   Login
