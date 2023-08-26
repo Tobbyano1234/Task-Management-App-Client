@@ -184,9 +184,9 @@ const TaskCard = (props: { task: ITask }) => {
                             value={updateTaskData.status}
                             onChange={handleChange}
                           >
-                            <option value="Todo">Todo</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
+                            <option value="todo">Todo</option>
+                            <option value="inprogress">In Progress</option>
+                            <option value="completed">Completed</option>
                           </select>
                         </div>
 

@@ -92,9 +92,9 @@ const TaskList = () => {
     if (selectedFilter === "All") {
       return true;
     } else if (selectedFilter === "Todo") {
-      return task.status !== "completed" && task.status !== "inprogress";
+      return task.status === "todo";
     } else if (selectedFilter === "In Progress") {
-      return task.status !== "completed" && task.status !== "todo";
+      return task.status === "inprogress";
     } else {
       return task.status === "completed";
     }
