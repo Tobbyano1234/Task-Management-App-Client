@@ -1,9 +1,42 @@
-import { Fragment } from "react";
-import { Link } from "react-router-dom";
+import { Fragment, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/common/Input";
 import Button from "../components/common/Button";
+import { toast } from "react-toastify";
+import { sendVerificationOTPService } from "../services/auth.service";
 
 export const ForgotPassword = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      const res = await sendVerificationOTPService(email);
+      const { statusCode, message } = res;
+      if (statusCode === 200) {
+        toast.success(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+        navigate("/reset-password", { state: { email } });
+      } else {
+        toast.error(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to reset password", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Fragment>
       <main>
@@ -19,7 +52,7 @@ export const ForgotPassword = () => {
           </div>
 
           <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form className="space-y-6" action="#" method="POST">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <InputField
                 labelName="Email Address"
                 htmlFor="email"
@@ -29,10 +62,18 @@ export const ForgotPassword = () => {
                 autoComplete="email"
                 placeholder="abc@example.com"
                 required
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
               />
 
               <div>
-                <Button type="submit" title="Submit" />
+                <Button
+                  type="submit"
+                  title={loading ? "Loading..." : "Forgot Password" }
+                  disabled={loading}
+                />
               </div>
             </form>
 

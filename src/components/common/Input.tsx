@@ -1,15 +1,16 @@
-import { ChangeEventHandler } from "react";
-
 interface IInput {
   type: string;
   labelName: string;
   htmlFor: string;
   labelClassName: string;
   name: string;
+  value?: string | number;
+  defaultValue?: string | number;
   placeholder: string;
   autoComplete?: string;
-  required:boolean
-  onChange?: () => ChangeEventHandler;
+  required?: boolean;
+  disabled?: boolean;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const InputField = ({
@@ -17,11 +18,14 @@ const InputField = ({
   htmlFor,
   labelClassName,
   name,
+  value,
+  defaultValue,
   type,
   placeholder,
   autoComplete,
+  disabled,
   onChange,
-  required
+  required,
 }: IInput): JSX.Element => {
   return (
     <>
@@ -32,6 +36,9 @@ const InputField = ({
         <div className="mt-2">
           <input
             name={name}
+            value={value}
+            defaultValue={defaultValue}
+            disabled={disabled ? disabled : false}
             type={type}
             placeholder={placeholder}
             onChange={onChange}
