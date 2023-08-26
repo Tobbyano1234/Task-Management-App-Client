@@ -1,19 +1,125 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import TaskCard from "./TaskCard/TaskCard";
 import Button from "./common/Button";
 import CreateTaskModal from "./Modal/CreateModal";
 import InputField from "./common/Input";
+import { toast } from "react-toastify";
+import {
+  createTaskService,
+  getAllUserTasksService,
+} from "../services/task.service";
+import { useAppSelector } from "../hooks/redux.hooks";
 
 const TaskList = () => {
+  const { user } = useAppSelector((state) => state.user);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [tasks, setTasks] = useState<ITask[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedSort, setSelectedSort] = useState<string>("Latest");
 
   const openModal = () => {
     setIsModalOpen(true);
-  }
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+  const [formData, setFormData] = useState<ITask>({
+    title: "",
+    description: "",
+    dueDate: "",
+  });
+
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+    try {
+      setLoading(true);
+      const res = await createTaskService({ userID: user?._id, ...formData });
+      const { statusCode, message } = res;
+      if (statusCode === 201) {
+        console.log("toast");
+        toast.success(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+        closeModal();
+      } else {
+        toast.error(message, {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to create task", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const getUserTasks = async () => {
+      try {
+        const { payload } = await getAllUserTasksService();
+        setTasks(payload);
+      } catch (error) {
+        toast.error("Failed to fetch tasks", {
+          position: toast.POSITION.TOP_CENTER,
+        });
+      }
+    };
+    getUserTasks();
+  }, [tasks]);
+
+  // Filter logic
+  const filteredTasks = tasks.filter((task) => {
+    if (selectedFilter === "All") {
+      return true;
+    } else if (selectedFilter === "Todo") {
+      return task.status !== "completed" && task.status !== "inprogress";
+    } else if (selectedFilter === "In Progress") {
+      return task.status !== "completed" && task.status !== "todo";
+    } else {
+      return task.status === "completed";
+    }
+  });
+
+  // Search logic
+  const searchedTasks = filteredTasks.filter((task) =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Sorting logic
+  const sortedTasks = [...searchedTasks].sort((a, b) => {
+    if (selectedSort === "Latest") {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bDate - aDate;
+    } else if (selectedSort === "Oldest") {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return aDate - bDate;
+    } else if (selectedSort === "Name") {
+      return a.title.localeCompare(b.title);
+    }
+    return 0;
+  });
 
   return (
     <Fragment>
@@ -28,10 +134,7 @@ const TaskList = () => {
 
           <CreateTaskModal isOpen={isModalOpen} onRequestClose={closeModal}>
             <h2 className="text-lg font-semibold mb-4">Create New Task</h2>
-            {/* Add your form fields here */}
-            {/* e.g., Title, Description, Due Date, etc. */}
-            {/* Include form elements and submit button */}
-            <form className="mt-6 space-y-6" action="#" method="POST">
+            <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
               <InputField
                 labelName="Title"
                 htmlFor="title"
@@ -39,6 +142,7 @@ const TaskList = () => {
                 type="text"
                 name="title"
                 placeholder="Enter task title"
+                onChange={handleChange}
                 required
               />
 
@@ -55,6 +159,7 @@ const TaskList = () => {
                   rows={4}
                   className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300 sm:text-sm"
                   placeholder="Enter task description"
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -66,14 +171,16 @@ const TaskList = () => {
                 type="date"
                 name="dueDate"
                 required
+                onChange={handleChange}
                 placeholder={""}
               />
 
-              {/* Add more input fields for completionDate and status */}
-              {/* Remember to customize according to your needs */}
-
               <div>
-                <Button type="submit" title="Create Task" />
+                <Button
+                  type="submit"
+                  title={loading ? "Loading..." : "Create Task"}
+                  disabled={loading}
+                />
               </div>
             </form>
           </CreateTaskModal>
@@ -82,6 +189,8 @@ const TaskList = () => {
               type="text"
               className="w-[200px] outline-none"
               placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button className="ml-2">
               <svg
@@ -110,10 +219,13 @@ const TaskList = () => {
               <select
                 id="filter"
                 className="block w-24 mt-1 border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300 sm:text-sm"
+                value={selectedFilter}
+                onChange={(e) => setSelectedFilter(e.target.value)}
               >
-                <option>All</option>
-                <option>Completed</option>
-                <option>Not Completed</option>
+                <option value="All">All</option>
+                <option value="Todo">Todo</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
 
@@ -124,10 +236,12 @@ const TaskList = () => {
               <select
                 id="sort"
                 className="block w-24 mt-1 border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-300 sm:text-sm"
+                value={selectedSort}
+                onChange={(e) => setSelectedSort(e.target.value)}
               >
-                <option>Latest</option>
-                <option>Oldest</option>
-                <option>Name</option>
+                <option value="Latest">Latest</option>
+                <option value="Oldest">Oldest</option>
+                <option value="Name">Name</option>
               </select>
             </div>
           </div>
@@ -135,11 +249,10 @@ const TaskList = () => {
 
         <div className="border-t-2 my-5 border-gray-200"></div>
         <div className="flex flex-wrap gap-2 justify-center">
-        <TaskCard />
-        <TaskCard />
-        <TaskCard />
-        <TaskCard />
-</div>
+          {sortedTasks.map((task, idx) => (
+            <TaskCard key={idx} task={task} />
+          ))}
+        </div>
       </main>
     </Fragment>
   );
