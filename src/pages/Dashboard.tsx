@@ -23,10 +23,11 @@ const Dashboard = () => {
           </div>
           <div className="flex flex-row space-x-5 items-center">
             <div className="flex items-center gap-x-3">
-              <UserCircleIcon
+              {user?.avatar ? (<img src={user?.avatar} alt="avatar" />)
+              : (<UserCircleIcon
                 className="h-12 w-12 text-gray-300"
                 aria-hidden="true"
-              />
+              />)}
             </div>
 
             <p>Hi {user?.firstName}</p>
