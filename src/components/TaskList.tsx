@@ -85,7 +85,7 @@ const TaskList = () => {
       }
     };
     getUserTasks();
-  }, [tasks]);
+  }, []);
 
   // Filter logic
   const filteredTasks = tasks.filter((task) => {
