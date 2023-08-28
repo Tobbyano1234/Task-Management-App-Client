@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import TaskCard from "./TaskCard/TaskCard";
 import Button from "./common/Button";
 import CreateTaskModal from "./Modal/CreateModal";
@@ -54,7 +54,6 @@ const TaskList = () => {
       const res = await createTaskService({ userID: user?._id, ...formData });
       const { statusCode, message } = res;
       if (statusCode === 201) {
-        console.log("toast");
         toast.success(message, {
           position: toast.POSITION.TOP_CENTER,
         });
@@ -85,42 +84,50 @@ const TaskList = () => {
       }
     };
     getUserTasks();
-  }, []);
+  }, [tasks]);
 
   // Filter logic
-  const filteredTasks = tasks.filter((task) => {
-    if (selectedFilter === "All") {
-      return true;
-    } else if (selectedFilter === "Todo") {
-      return task.status === "todo";
-    } else if (selectedFilter === "In Progress") {
-      return task.status === "inprogress";
-    } else {
-      return task.status === "completed";
-    }
-  });
+  const filteredTasks = useMemo(() => {
+  return tasks?.filter((task) => {
+      if (selectedFilter === "All") {
+        return true;
+      } else if (selectedFilter === "Todo") {
+        return task.status === "todo";
+      } else if (selectedFilter === "In Progress") {
+        return task.status === "inprogress";
+      } else {
+        return task.status === "completed";
+      }
+    });
+  }, [tasks, selectedFilter, searchQuery]);
+  
 
   // Search logic
-  const searchedTasks = filteredTasks.filter((task) =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  const searchedTasks = useMemo(() => {
+    return filteredTasks.filter((task:ITask) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [filteredTasks, searchQuery]);
+  
   // Sorting logic
-  const sortedTasks = [...searchedTasks].sort((a, b) => {
-    if (selectedSort === "Latest") {
-      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bDate - aDate;
-    } else if (selectedSort === "Oldest") {
-      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return aDate - bDate;
-    } else if (selectedSort === "Name") {
-      return a.title.localeCompare(b.title);
-    }
-    return 0;
-  });
-
+  const sortedTasks = useMemo(() => {
+ return [...searchedTasks].sort((a, b) => {
+  if (selectedSort === "Latest") {
+    const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bDate - aDate;
+  } else if (selectedSort === "Oldest") {
+    const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return aDate - bDate;
+  } else if (selectedSort === "Name") {
+    return a.title.localeCompare(b.title);
+  }
+  return 0;
+});
+  }, [searchedTasks, selectedSort]);
+  
+ 
   return (
     <Fragment>
       <main className="my-5 px-5">

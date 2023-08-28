@@ -21,6 +21,12 @@ const TaskCard = (props: { task: ITask }) => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState<boolean>(false);
   const [updateTaskData, setUpdateTaskData] = useState<ITask>(initialTaskData);
   const [loading, setLoading] = useState<boolean>();
+  const [charCount, setCharCount] = useState<number>(
+    initialTaskData.description.length
+  );
+  const [description, setDescription] = useState<string>(
+    initialTaskData.description
+  );
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -67,10 +73,18 @@ const TaskCard = (props: { task: ITask }) => {
       | React.ChangeEvent<HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setUpdateTaskData((prevTaskData) => ({
-      ...prevTaskData,
-      [name]: value,
-    }));
+
+    if (name === "description") {
+      if (value.length <= 500) {
+        setDescription(value);
+        setCharCount(value.length);
+      }
+    } else {
+      setUpdateTaskData((prevTaskData) => ({
+        ...prevTaskData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,7 +119,7 @@ const TaskCard = (props: { task: ITask }) => {
     <Fragment>
       <main>
         <div className="container">
-          <div className="w-[20rem] h-auto shadow-xl rounded-md bg-white">
+          <div className="w-[20rem] h-44 leading-tight shadow-xl rounded-md bg-white">
             <div className="mx-2  p-5 flex flex-col justify-between h-full">
               <div>
                 <div className="flex justify-between">
@@ -151,9 +165,17 @@ const TaskCard = (props: { task: ITask }) => {
                             className="block w-full pl-4 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             placeholder="Enter task description"
                             onChange={handleChange}
-                            value={updateTaskData.description}
+                            value={description }
                             required
                           />
+                          <p className="text-xs mt-1 text-gray-500">
+                            Character Count: {charCount} / 500
+                          </p>
+                          {charCount > 500 && (
+                            <p className="text-xs mt-1 text-red-500">
+                              Description should not exceed 500 characters.
+                            </p>
+                          )}
                         </div>
 
                         <InputField
@@ -202,14 +224,14 @@ const TaskCard = (props: { task: ITask }) => {
                   </div>
                 </div>
                 <div className="mt-3">
-                  <p className="font-sans font-normal text-lg">
+                  <p className="font-sans font-normal text-lg text-ellipsis overflow-hidden ...">
                     {task.description.substring(0, 50)}
                     {task.description.length > 50 && (
                       <span
                         className="text-indigo-600 cursor-pointer ml-1"
                         onClick={openDetailsModal}
                       >
-                        View More
+                        ... View More
                       </span>
                     )}
                   </p>
