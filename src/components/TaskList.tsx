@@ -84,7 +84,8 @@ const TaskList = () => {
       }
     };
     getUserTasks();
-  }, [tasks]);
+  }, []);
+  // }, [tasks]);
 
   // Filter logic
   const filteredTasks = useMemo(() => {
