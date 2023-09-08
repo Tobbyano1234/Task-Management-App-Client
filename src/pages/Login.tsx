@@ -1,7 +1,9 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, 
+  // useEffect,
+   useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 
 import InputField from "../components/common/Input";
 import Button from "../components/common/Button";
@@ -10,9 +12,9 @@ import { useAppDispatch } from "../hooks/redux.hooks";
 import { loginSuccess } from "../redux/action/auth";
 import { storeUserDetails } from "../redux/action/user";
 
-const ENDPOINT = "https://famwork-web-service.onrender.com/api/v1";
+// const ENDPOINT = "https://famwork-web-service.onrender.com/api/v1";
 // const ENDPOINT = 'https://laughing-succotash-7j7jqr7xg6vfrgrv-4500.app.github.dev/api/v1'
-let socket;
+// let socket;
 export const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -22,10 +24,10 @@ export const Login = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
 
-useEffect(()=> {
-socket = io(ENDPOINT);
-console.log('socket', socket)
-},[formData])
+// useEffect(()=> {
+// socket = io(ENDPOINT);
+// console.log('socket', socket)
+// },[formData])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
