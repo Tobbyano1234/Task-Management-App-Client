@@ -10,7 +10,8 @@ import { useAppDispatch } from "../hooks/redux.hooks";
 import { loginSuccess } from "../redux/action/auth";
 import { storeUserDetails } from "../redux/action/user";
 
-const ENDPOINT = 'https://laughing-succotash-7j7jqr7xg6vfrgrv-4500.app.github.dev/api/v1'
+const ENDPOINT = "https://famwork-web-service.onrender.com/api/v1";
+// const ENDPOINT = 'https://laughing-succotash-7j7jqr7xg6vfrgrv-4500.app.github.dev/api/v1'
 let socket;
 export const Login = () => {
   const navigate = useNavigate();
